@@ -33,8 +33,12 @@ export default function JobForm() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Upload failed");
       setCv(data.text);
-    } catch (err: any) {
-      alert(err.message || "Upload error");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        alert(err.message);
+      } else {
+        alert("An unexpected error occurred.");
+      }
     }
   };
 
@@ -47,12 +51,19 @@ export default function JobForm() {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Analysis failed");
+
+      if (!res.ok) {
+        throw new Error(data.error || "Analysis failed");
+      }
 
       setAnalysis(data);
       setShowResult(true);
-    } catch (err: any) {
-      alert(err.message || "Analysis error");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        alert(err.message);
+      } else {
+        alert("Something went wrong during analysis.");
+      }
     }
   };
 
