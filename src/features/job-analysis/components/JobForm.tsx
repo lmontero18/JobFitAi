@@ -42,12 +42,14 @@ export default function JobForm() {
         body: formData,
       });
 
-      const rawText = await res.text();
+      const contentType = res.headers.get("content-type");
 
-      let data;
-      try {
-        data = JSON.parse(rawText);
-      } catch {
+      let data: any;
+      if (contentType?.includes("application/json")) {
+        data = await res.json();
+      } else {
+        const raw = await res.text();
+        console.error("❌ Respuesta no JSON del servidor:", raw);
         throw new Error("Invalid JSON response from the server.");
       }
 
@@ -66,6 +68,7 @@ export default function JobForm() {
       setIsUploading(false);
     }
   };
+
   const handleAnalyze = async () => {
     try {
       const res = await fetch("/api/analyze", {
