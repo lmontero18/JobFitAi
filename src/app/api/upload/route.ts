@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import mammoth from "mammoth";
 import { extractTextFromPdf } from "@/lib/extractTextFromPdf";
 
