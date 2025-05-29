@@ -14,6 +14,8 @@ interface AnalysisResult {
   feedback: string;
 }
 
+type UploadResponse = { text: string } | { error: string };
+
 export default function JobForm() {
   const [jobDescription, setJobDescription] = useState("");
   const [cv, setCv] = useState("");
@@ -44,7 +46,8 @@ export default function JobForm() {
 
       const contentType = res.headers.get("content-type");
 
-      let data: any;
+      let data: UploadResponse;
+
       if (contentType?.includes("application/json")) {
         data = await res.json();
       } else {
@@ -54,10 +57,14 @@ export default function JobForm() {
       }
 
       if (!res.ok) {
-        throw new Error(data?.error || "Upload failed");
+        throw new Error("error" in data ? data.error : "Upload failed");
       }
 
-      setCv(data.text);
+      if ("text" in data) {
+        setCv(data.text);
+      } else {
+        throw new Error("Invalid response format.");
+      }
     } catch (err: unknown) {
       if (err instanceof Error) {
         alert(err.message);
