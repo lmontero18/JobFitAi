@@ -3,6 +3,7 @@ import mammoth from "mammoth";
 import { extractTextFromPdf } from "@/lib/extractTextFromPdf";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
   try {
