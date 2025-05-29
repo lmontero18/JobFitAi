@@ -8,15 +8,19 @@ import { FiCheck, FiLoader, FiX } from "react-icons/fi";
 type LoadingButtonProps = {
   onSuccess: () => void | Promise<void>;
   validate: () => boolean;
+  onClick?: () => void;
   children?: React.ReactNode;
   className?: string;
+  loading?: boolean;
 };
 
 export const LoadingButton = ({
   onSuccess,
   validate,
+  onClick,
   children = "Analyze",
   className = "",
+  loading = false,
 }: LoadingButtonProps) => {
   const [variant, setVariant] = useState<
     "neutral" | "loading" | "error" | "success"
@@ -25,54 +29,63 @@ export const LoadingButton = ({
   const baseStyle =
     "relative rounded-md px-6 py-2 font-medium transition-all text-center";
 
+  const effectiveVariant =
+    loading && variant === "neutral" ? "loading" : variant;
+
   const variantStyle =
-    variant === "neutral"
+    effectiveVariant === "neutral"
       ? "bg-white text-black hover:bg-gray-200"
-      : variant === "error"
+      : effectiveVariant === "error"
       ? "bg-red-500 text-white"
-      : variant === "success"
+      : effectiveVariant === "success"
       ? "bg-green-500 text-white"
       : "bg-blue-400 pointer-events-none text-white";
 
-  const handleClick = () => {
-    if (variant !== "neutral") return;
+  const handleClick = async () => {
+    if (variant !== "neutral" || loading) return;
+
+    onClick?.();
+
     if (!validate()) return;
 
     setVariant("loading");
-    setTimeout(() => {
-      const success = true;
-      if (success) {
-        setVariant("success");
-        onSuccess();
-      } else {
-        setVariant("error");
-      }
 
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await onSuccess();
+      setVariant("success");
+    } catch {
+      setVariant("error");
+    } finally {
       setTimeout(() => {
         setVariant("neutral");
       }, 2000);
-    }, 1500);
+    }
   };
 
   return (
     <motion.button
-      disabled={variant !== "neutral"}
+      disabled={variant !== "neutral" || loading}
       onClick={handleClick}
       className={`${baseStyle} ${variantStyle} ${className}`}
     >
       <motion.span
         animate={{
-          y: variant === "neutral" ? 0 : 6,
-          opacity: variant === "neutral" ? 1 : 0,
+          y: effectiveVariant === "neutral" ? 0 : 6,
+          opacity: effectiveVariant === "neutral" ? 1 : 0,
         }}
         className="inline-block"
       >
         {children}
       </motion.span>
 
-      <IconOverlay Icon={FiLoader} visible={variant === "loading"} spin />
-      <IconOverlay Icon={FiX} visible={variant === "error"} />
-      <IconOverlay Icon={FiCheck} visible={variant === "success"} />
+      <IconOverlay
+        Icon={FiLoader}
+        visible={effectiveVariant === "loading"}
+        spin
+      />
+      <IconOverlay Icon={FiX} visible={effectiveVariant === "error"} />
+      <IconOverlay Icon={FiCheck} visible={effectiveVariant === "success"} />
     </motion.button>
   );
 };

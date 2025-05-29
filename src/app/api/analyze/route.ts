@@ -18,9 +18,19 @@ You are an expert recruiter.
 Your task is to analyze a resume against a job description.
 
 Return ONLY a valid, minified JSON object like this:
-{"score":87,"strengths":["..."],"weaknesses":["..."],"recommendations":["..."]}
+{
+  "score":87,
+  "strengths":["..."],
+  "weaknesses":["..."],
+  "recommendations":["..."],
+  "shouldApply": true,
+  "feedback": "..."
+}
 
-Do NOT include any explanation or extra text. If unsure, return empty arrays.
+- "shouldApply" must be true or false.
+- "feedback" must be a short and actionable sentence based on the match.
+- Do NOT include any explanation or extra text.
+- If unsure about any field, use empty arrays or a neutral message.
 
 Resume:
 ${cv}

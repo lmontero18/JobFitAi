@@ -1,12 +1,15 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { getStatus } from "@/lib/scoreStatus";
 
 type AnalysisResult = {
   score: number;
   strengths: string[];
   weaknesses: string[];
   recommendations: string[];
+  shouldApply: boolean;
+  feedback: string;
 };
 
 type Props = {
@@ -14,17 +17,21 @@ type Props = {
 };
 
 export default function ResultPlaceholder({ analysis }: Props) {
+  const { color, message } = getStatus(analysis.score, analysis.shouldApply);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="space-y-6 text-white rounded-xl p-6 shadow-md"
+      className="space-y-6 text-white p-6"
     >
       <h2 className="text-xl font-bold text-white flex items-center gap-2">
         🎯 Compatibility Score:{" "}
-        <span className="text-2xl text-green-400">{analysis.score}%</span>
+        <span className={`text-2xl ${color}`}>{analysis.score}%</span>
       </h2>
+
+      <p className={`text-sm font-medium ${color}`}>{message}</p>
 
       <div>
         <h3 className="font-semibold text-white mb-1">✅ Strengths</h3>
@@ -51,6 +58,19 @@ export default function ResultPlaceholder({ analysis }: Props) {
             <li key={`recommendation-${i}`}>{item}</li>
           ))}
         </ul>
+      </div>
+
+      <div>
+        <h3 className="font-semibold text-white mb-1">
+          📌 Final Recommendation
+        </h3>
+        <p
+          className={`text-sm font-medium ${
+            analysis.shouldApply ? "text-green-400" : "text-red-500"
+          }`}
+        >
+          {analysis.feedback}
+        </p>
       </div>
     </motion.div>
   );

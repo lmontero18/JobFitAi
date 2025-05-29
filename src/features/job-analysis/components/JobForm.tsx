@@ -1,14 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import ResultPlaceholder from "./ResultPlaceholder";
-import { EncryptButton } from "@/shared/components/EncryptButton";
+import { Delete } from "@/shared/components/icons/Delete";
+import { LoadingButton } from "@/shared/components/LoadingButton";
 
 interface AnalysisResult {
   score: number;
   strengths: string[];
   weaknesses: string[];
   recommendations: string[];
+  shouldApply: boolean;
+  feedback: string;
 }
 
 export default function JobForm() {
@@ -16,6 +19,13 @@ export default function JobForm() {
   const [cv, setCv] = useState("");
   const [showResult, setShowResult] = useState(false);
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const triggerFilePicker = () => {
+    fileInputRef.current?.click();
+  };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -25,6 +35,8 @@ export default function JobForm() {
     formData.append("file", file);
 
     try {
+      setIsUploading(true);
+
       const res = await fetch("/api/upload", {
         method: "POST",
         body: formData,
@@ -39,9 +51,10 @@ export default function JobForm() {
       } else {
         alert("An unexpected error occurred.");
       }
+    } finally {
+      setIsUploading(false);
     }
   };
-
   const handleAnalyze = async () => {
     try {
       const res = await fetch("/api/analyze", {
@@ -67,10 +80,18 @@ export default function JobForm() {
     }
   };
 
+  const handleReset = () => {
+    setJobDescription("");
+    setCv("");
+    setAnalysis(null);
+    setShowResult(false);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-900 to-black text-white px-4 py-10 flex justify-center">
-      <div className="w-full max-w-6xl space-y-10">
-        <h1 className="text-4xl md:text-5xl text-center font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-violet-600">
+      <div className="w-full max-w-6xl space-y-8">
+        <h1 className="text-4xl md:text-5xl text-center font-bold">
           🧠 Job Fit AI
         </h1>
         <p className="text-center text-neutral-400 text-sm md:text-base">
@@ -89,23 +110,39 @@ export default function JobForm() {
               placeholder="Paste the job description here..."
               className="w-full bg-neutral-800 border border-white/10 rounded-xl p-4 text-sm text-white outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
             />
-            <div>
-              <h2 className="text-lg font-semibold flex items-center gap-2">
-                📄 Resume Parse
-              </h2>
-              <textarea
-                value={cv}
-                readOnly
-                rows={10}
-                className="w-full bg-neutral-800 border border-white/10 rounded-xl p-4 text-sm text-gray-300 resize-none max-h-64 overflow-y-auto"
-              />
-            </div>
+
+            <h2 className="text-lg font-semibold flex items-center gap-2">
+              📄 Your Resume
+            </h2>
+            <p className="text-xs text-neutral-400 mb-2">
+              Supported formats: <span className="font-medium">.docx</span> or{" "}
+              <span className="font-medium">.pdf</span>
+            </p>
+            <textarea
+              value={cv}
+              readOnly
+              rows={10}
+              className="w-full bg-neutral-800 border border-white/10 rounded-xl p-4 text-sm text-gray-300 resize-none max-h-64 overflow-y-auto focus:ring-0 focus:outline-none"
+            />
           </div>
 
-          <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-6 min-h-[440px]">
-            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              📊 Analysis Result
-            </h2>
+          <div className="relative bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-6 min-h-[440px]">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold flex items-center gap-2">
+                📊 Analysis Result
+              </h2>
+
+              {showResult && (
+                <div
+                  onClick={handleReset}
+                  title="Clear analysis"
+                  className="cursor-pointer hover:text-red-400"
+                >
+                  <Delete />
+                </div>
+              )}
+            </div>
+
             {showResult && analysis ? (
               <ResultPlaceholder analysis={analysis} />
             ) : (
@@ -115,23 +152,32 @@ export default function JobForm() {
         </div>
 
         <div className="flex flex-col sm:flex-row gap-4 w-full justify-center pt-4">
-          <label className="w-full sm:w-auto bg-white text-black px-6 py-2 rounded-lg font-semibold hover:bg-gray-200 transition text-center cursor-pointer">
-            Upload CV
-            <input
-              type="file"
-              accept=".docx"
-              onChange={handleFileUpload}
-              hidden
-            />
-          </label>
-
-          <EncryptButton
+          <LoadingButton
             className="w-full sm:w-auto"
-            onClick={() => {
+            validate={() => false}
+            onClick={triggerFilePicker}
+            loading={isUploading}
+            onSuccess={() => {}}
+          >
+            Upload CV
+          </LoadingButton>
+
+          <input
+            type="file"
+            accept=".docx, .pdf"
+            ref={fileInputRef}
+            onChange={handleFileUpload}
+            hidden
+          />
+
+          <LoadingButton
+            className="w-full sm:w-auto"
+            validate={() => {
               if (!jobDescription || !cv) {
                 alert("Please fill in both the job description and CV.");
-                return;
+                return false;
               }
+              return true;
             }}
             onSuccess={handleAnalyze}
           />
