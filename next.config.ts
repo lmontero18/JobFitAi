@@ -1,10 +1,5 @@
 import type { NextConfig } from "next";
 
-const nextConfig: NextConfig = {
-  experimental: {
-    // 👇 Esto es lo importante: forzar el uso de PostCSS
-    legacyCss: true,
-  },
-};
+const nextConfig: NextConfig = {};
 
 export default nextConfig;
