@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import mammoth from "mammoth";
 import { extractTextFromPdf } from "@/lib/extractTextFromPdf";
 
+export const runtime = "nodejs";
+
 export async function POST(req: Request) {
   try {
     const formData = await req.formData();
