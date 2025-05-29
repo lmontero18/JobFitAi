@@ -15,7 +15,10 @@ export async function POST(req: Request) {
     const file = formData.get("file") as File;
     if (!file) {
       console.log("🚫 [UPLOAD] No file found in formData");
-      return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
+      return new Response(JSON.stringify({ error: "No file uploaded" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     console.log("📄 [UPLOAD] File received:", file.name, file.type);
@@ -30,10 +33,10 @@ export async function POST(req: Request) {
 
     if (!allowedTypes.includes(mimeType)) {
       console.log("🚫 [UPLOAD] Unsupported file type:", mimeType);
-      return NextResponse.json(
-        { error: "Unsupported file type" },
-        { status: 400 }
-      );
+      return new Response(JSON.stringify({ error: "Unsupported file type" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     console.log("✅ [UPLOAD] Valid file type:", mimeType);
@@ -58,9 +61,12 @@ export async function POST(req: Request) {
 
     if (!extractedText.trim()) {
       console.log("⚠️ [UPLOAD] Extracted text is empty");
-      return NextResponse.json(
-        { error: "No text could be extracted" },
-        { status: 400 }
+      return new Response(
+        JSON.stringify({ error: "No text could be extracted" }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }
       );
     }
 
@@ -68,11 +74,20 @@ export async function POST(req: Request) {
       "🎯 [UPLOAD] Extracted text preview:",
       extractedText.slice(0, 200)
     );
+    console.log("🔍 [UPLOAD] extractedText type:", typeof extractedText);
 
-    return NextResponse.json({ text: extractedText.trim() });
-  } catch (err) {
+    return new Response(JSON.stringify({ text: extractedText.trim() }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (err: any) {
     console.error("🔥 [UPLOAD ERROR]", err);
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+    return new Response(
+      JSON.stringify({ error: "Server error", detail: err.message }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
   }
 }
-//redeployu
