@@ -42,8 +42,19 @@ export default function JobForm() {
         body: formData,
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Upload failed");
+      const rawText = await res.text();
+
+      let data;
+      try {
+        data = JSON.parse(rawText);
+      } catch {
+        throw new Error("Invalid JSON response from the server.");
+      }
+
+      if (!res.ok) {
+        throw new Error(data?.error || "Upload failed");
+      }
+
       setCv(data.text);
     } catch (err: unknown) {
       if (err instanceof Error) {
