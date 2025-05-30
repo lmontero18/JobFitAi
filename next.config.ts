@@ -1,10 +1,22 @@
 import type { NextConfig } from "next";
+import type { WebpackConfigContext } from "next/dist/server/config-shared";
 import fs from "fs";
 import path from "path";
 
 const nextConfig: NextConfig = {
   output: "standalone",
-  webpack(config, { isServer }) {
+  webpack(
+    config: WebpackConfigContext["config"],
+    { isServer }: WebpackConfigContext
+  ) {
+    config.resolve = {
+      ...config.resolve,
+      alias: {
+        ...(config.resolve?.alias || {}),
+        canvas: false,
+      },
+    };
+
     if (isServer) {
       const srcPath = path.join(
         __dirname,

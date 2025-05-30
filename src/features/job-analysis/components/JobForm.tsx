@@ -7,7 +7,6 @@ import ResultPlaceholder from "./ResultPlaceholder";
 import { Delete } from "@/shared/components/icons/Delete";
 import { LoadingButton } from "@/shared/components/LoadingButton";
 
-// ✅ Asignamos el worker para que funcione correctamente en todos los entornos
 GlobalWorkerOptions.workerSrc = workerSrc;
 
 interface AnalysisResult {
@@ -100,9 +99,7 @@ export default function JobForm() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-6 space-y-4">
-            <h2 className="text-lg font-semibold flex items-center gap-2">
-              📝 Job Description
-            </h2>
+            <h2 className="text-lg font-semibold">📝 Job Description</h2>
             <textarea
               value={jobDescription}
               onChange={(e) => setJobDescription(e.target.value)}
@@ -111,25 +108,21 @@ export default function JobForm() {
               className="w-full bg-neutral-800 border border-white/10 rounded-xl p-4 text-sm text-white outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
             />
 
-            <h2 className="text-lg font-semibold flex items-center gap-2">
-              📄 Your Resume
-            </h2>
+            <h2 className="text-lg font-semibold">📄 Your Resume</h2>
             <p className="text-xs text-neutral-400 mb-2">
-              Supported format: <span className="font-medium">PDF</span>
+              Supported format: PDF
             </p>
             <textarea
               value={cv}
               readOnly
               rows={10}
-              className="w-full bg-neutral-800 border border-white/10 rounded-xl p-4 text-sm text-gray-300 resize-none max-h-64 overflow-y-auto focus:ring-0 focus:outline-none"
+              className="w-full bg-neutral-800 border border-white/10 rounded-xl p-4 text-sm text-gray-300 resize-none max-h-64 overflow-y-auto"
             />
           </div>
 
-          <div className="relative bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-6 min-h-[440px]">
+          <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-6 min-h-[440px]">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold flex items-center gap-2">
-                📊 Analysis Result
-              </h2>
+              <h2 className="text-lg font-semibold">📊 Analysis Result</h2>
               {showResult && (
                 <div
                   onClick={handleReset}
