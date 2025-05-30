@@ -3,10 +3,12 @@
 import { useRef, useState } from "react";
 import { getDocument, GlobalWorkerOptions } from "pdfjs-dist";
 import workerSrc from "pdfjs-dist/build/pdf.worker.entry";
+import type { TextItem } from "pdfjs-dist/types/src/display/api";
 import ResultPlaceholder from "./ResultPlaceholder";
 import { Delete } from "@/shared/components/icons/Delete";
 import { LoadingButton } from "@/shared/components/LoadingButton";
 
+// 👇 Asignar el worker para que funcione en producción
 GlobalWorkerOptions.workerSrc = workerSrc;
 
 interface AnalysisResult {
@@ -44,7 +46,11 @@ export default function JobForm() {
         for (let i = 1; i <= pdf.numPages; i++) {
           const page = await pdf.getPage(i);
           const content = await page.getTextContent();
-          const strings = content.items.map((item: any) => item.str);
+
+          const strings = content.items
+            .filter((item): item is TextItem => "str" in item)
+            .map((item) => item.str);
+
           extractedText += strings.join(" ") + "\n\n";
         }
 
