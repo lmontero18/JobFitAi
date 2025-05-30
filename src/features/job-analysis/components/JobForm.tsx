@@ -1,9 +1,13 @@
 "use client";
 
 import { useRef, useState } from "react";
+import * as pdfjsLib from "pdfjs-dist/build/pdf";
+import pdfjsWorker from "pdfjs-dist/build/pdf.worker.entry";
 import ResultPlaceholder from "./ResultPlaceholder";
 import { Delete } from "@/shared/components/icons/Delete";
 import { LoadingButton } from "@/shared/components/LoadingButton";
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
 interface AnalysisResult {
   score: number;
@@ -14,63 +18,43 @@ interface AnalysisResult {
   feedback: string;
 }
 
-type UploadResponse = { text: string } | { error: string };
-
 export default function JobForm() {
   const [jobDescription, setJobDescription] = useState("");
   const [cv, setCv] = useState("");
   const [showResult, setShowResult] = useState(false);
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
   const [isUploading, setIsUploading] = useState(false);
-
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const triggerFilePicker = () => {
-    fileInputRef.current?.click();
-  };
+  const triggerFilePicker = () => fileInputRef.current?.click();
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const formData = new FormData();
-    formData.append("file", file);
+    setIsUploading(true);
 
     try {
-      setIsUploading(true);
+      if (file.type === "application/pdf") {
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
 
-      const res = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
+        let extractedText = "";
 
-      const contentType = res.headers.get("content-type");
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+          const content = await page.getTextContent();
+          const strings = content.items.map((item: any) => item.str);
+          extractedText += strings.join(" ") + "\n\n";
+        }
 
-      let data: UploadResponse;
-
-      if (contentType?.includes("application/json")) {
-        data = await res.json();
+        setCv(extractedText.trim());
       } else {
-        const raw = await res.text();
-        console.error("❌ Respuesta no JSON del servidor:", raw);
-        throw new Error("Invalid JSON response from the server.");
+        alert("Only PDF files are supported at the moment.");
       }
-
-      if (!res.ok) {
-        throw new Error("error" in data ? data.error : "Upload failed");
-      }
-
-      if ("text" in data) {
-        setCv(data.text);
-      } else {
-        throw new Error("Invalid response format.");
-      }
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        alert(err.message);
-      } else {
-        alert("An unexpected error occurred.");
-      }
+    } catch (err) {
+      console.error("Error extracting PDF:", err);
+      alert("Failed to read the file.");
     } finally {
       setIsUploading(false);
     }
@@ -86,18 +70,12 @@ export default function JobForm() {
 
       const data = await res.json();
 
-      if (!res.ok) {
-        throw new Error(data.error || "Analysis failed");
-      }
+      if (!res.ok) throw new Error(data.error || "Analysis failed");
 
       setAnalysis(data);
       setShowResult(true);
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        alert(err.message);
-      } else {
-        alert("Something went wrong during analysis.");
-      }
+      alert(err instanceof Error ? err.message : "Something went wrong.");
     }
   };
 
@@ -136,8 +114,7 @@ export default function JobForm() {
               📄 Your Resume
             </h2>
             <p className="text-xs text-neutral-400 mb-2">
-              Supported formats: <span className="font-medium">.docx</span> or{" "}
-              <span className="font-medium">.pdf</span>
+              Supported format: <span className="font-medium">PDF</span>
             </p>
             <textarea
               value={cv}
@@ -152,7 +129,6 @@ export default function JobForm() {
               <h2 className="text-lg font-semibold flex items-center gap-2">
                 📊 Analysis Result
               </h2>
-
               {showResult && (
                 <div
                   onClick={handleReset}
@@ -185,7 +161,7 @@ export default function JobForm() {
 
           <input
             type="file"
-            accept=".docx, .pdf"
+            accept=".pdf"
             ref={fileInputRef}
             onChange={handleFileUpload}
             hidden

@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build",
+    "build": "node scripts/copy-worker.js && next build",
     "start": "next start",
     "lint": "next lint"
   },
@@ -16,7 +16,7 @@
     "multer": "^2.0.0",
     "next": "15.3.2",
     "openai": "^4.103.0",
-    "pdf-parse": "^1.1.1",
+    "pdfjs-dist": "^3.11.174",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-icons": "^5.5.0"
@@ -26,7 +26,7 @@
     "@tailwindcss/postcss": "^4",
     "@types/mime-types": "^2.1.4",
     "@types/node": "^20",
-    "@types/pdf-parse": "^1.1.5",
+    "@types/pdfjs-dist": "^2.10.377",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
