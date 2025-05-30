@@ -1,5 +1,6 @@
 import mammoth from "mammoth";
 import { extractTextFromPdf } from "@/lib/extractTextFromPdf";
+import { ensurePdfParseDummyFile } from "@/lib/ensurePdfParseDummyFile"; // 👈 IMPORTANTE
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -44,6 +45,12 @@ export async function POST(req: Request) {
 
     if (mimeType === "application/pdf") {
       console.log("📚 [UPLOAD] Starting PDF extraction...");
+
+      // ✅ FIX para pdf-parse en producción (descargar dummy si falta)
+      if (process.env.NODE_ENV === "production") {
+        await ensurePdfParseDummyFile();
+      }
+
       extractedText = await extractTextFromPdf(buffer);
       console.log("✅ [UPLOAD] PDF extraction completed");
     }
