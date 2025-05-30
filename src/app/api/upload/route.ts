@@ -9,7 +9,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No text provided" }, { status: 400 });
     }
 
-    // Aquí podrías procesar el texto, guardarlo, o enviarlo a OpenAI, etc.
     return NextResponse.json({
       message: "Text received",
       preview: text.slice(0, 200),
