@@ -8,7 +8,7 @@ import ResultPlaceholder from "./ResultPlaceholder";
 import { Delete } from "@/shared/components/icons/Delete";
 import { LoadingButton } from "@/shared/components/LoadingButton";
 
-// 👇 Asignar el worker para que funcione en producción
+// Asignar worker
 GlobalWorkerOptions.workerSrc = workerSrc;
 
 interface AnalysisResult {
