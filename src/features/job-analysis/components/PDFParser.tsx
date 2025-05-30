@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import * as pdfjsLib from "pdfjs-dist";
+import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf";
 import type { TextItem } from "pdfjs-dist/types/src/display/api";
 
 if (typeof window !== "undefined") {
