@@ -7,8 +7,8 @@ import type { TextItem } from "pdfjs-dist/types/src/display/api";
 import ResultPlaceholder from "./ResultPlaceholder";
 import { Delete } from "@/shared/components/icons/Delete";
 import { LoadingButton } from "@/shared/components/LoadingButton";
+import mammoth from "mammoth";
 
-// Asignar worker
 GlobalWorkerOptions.workerSrc = workerSrc;
 
 interface AnalysisResult {
@@ -55,11 +55,18 @@ export default function JobForm() {
         }
 
         setCv(extractedText.trim());
+      } else if (
+        file.type ===
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      ) {
+        const arrayBuffer = await file.arrayBuffer();
+        const { value } = await mammoth.extractRawText({ arrayBuffer });
+        setCv(value.trim());
       } else {
-        alert("Only PDF files are supported at the moment.");
+        alert("Only PDF and DOCX files are supported.");
       }
     } catch (err) {
-      console.error("Error extracting PDF:", err);
+      console.error("Error extracting file:", err);
       alert("Failed to read the file.");
     } finally {
       setIsUploading(false);
@@ -116,7 +123,7 @@ export default function JobForm() {
 
             <h2 className="text-lg font-semibold">📄 Your Resume</h2>
             <p className="text-xs text-neutral-400 mb-2">
-              Supported format: PDF
+              Supported formats: PDF, DOCX
             </p>
             <textarea
               value={cv}
@@ -161,7 +168,7 @@ export default function JobForm() {
 
           <input
             type="file"
-            accept=".pdf"
+            accept=".pdf, .doc, .docx"
             ref={fileInputRef}
             onChange={handleFileUpload}
             hidden
