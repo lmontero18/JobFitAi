@@ -44,6 +44,7 @@ export default function JobForm() {
         for (let i = 1; i <= pdf.numPages; i++) {
           const page = await pdf.getPage(i);
           const content = await page.getTextContent();
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const strings = content.items.map((item: any) => item.str);
           extractedText += strings.join(" ") + "\n\n";
         }
