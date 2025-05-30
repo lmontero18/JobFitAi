@@ -1,15 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf";
+import { getDocument, GlobalWorkerOptions } from "pdfjs-dist";
+import workerSrc from "pdfjs-dist/build/pdf.worker.entry";
 import type { TextItem } from "pdfjs-dist/types/src/display/api";
 
-if (typeof window !== "undefined") {
-  const isDev = process.env.NODE_ENV === "development";
-  pdfjsLib.GlobalWorkerOptions.workerSrc = isDev
-    ? `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`
-    : "/pdf.worker.min.js";
-}
+// ✅ Asignamos el worker para que funcione en todos los entornos
+GlobalWorkerOptions.workerSrc = workerSrc;
 
 interface PDFParserProps {
   file: File;
@@ -27,21 +24,21 @@ export default function PDFParser({
   useEffect(() => {
     const parsePDF = async () => {
       try {
-        setProgress("Reading PDF file...");
+        setProgress("📥 Reading PDF file...");
         const arrayBuffer = await file.arrayBuffer();
         const uint8Array = new Uint8Array(arrayBuffer);
 
-        setProgress("Loading PDF document...");
-        const loadingTask = pdfjsLib.getDocument({
+        setProgress("📄 Loading PDF document...");
+        const pdf = await getDocument({
           data: uint8Array,
           cMapUrl: "https://unpkg.com/pdfjs-dist@3.11.174/cmaps/",
           cMapPacked: true,
-        });
-        const pdf = await loadingTask.promise;
+        }).promise;
 
         let fullText = "";
+
         for (let i = 1; i <= pdf.numPages; i++) {
-          setProgress(`Processing page ${i} of ${pdf.numPages}...`);
+          setProgress(`🔍 Processing page ${i} of ${pdf.numPages}...`);
           const page = await pdf.getPage(i);
           const textContent = await page.getTextContent();
           const pageText = textContent.items
@@ -51,10 +48,10 @@ export default function PDFParser({
           fullText += pageText + "\n\n";
         }
 
-        setProgress("PDF processing completed!");
+        setProgress("✅ PDF processing completed!");
         onTextExtracted(fullText.trim());
       } catch (error) {
-        console.error("Error parsing PDF:", error);
+        console.error("❌ Error parsing PDF:", error);
         onError(
           error instanceof Error
             ? error.message

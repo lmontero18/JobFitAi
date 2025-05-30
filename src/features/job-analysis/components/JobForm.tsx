@@ -1,13 +1,14 @@
 "use client";
 
 import { useRef, useState } from "react";
-import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf";
-import pdfjsWorker from "pdfjs-dist/legacy/build/pdf.worker.entry";
+import { getDocument, GlobalWorkerOptions } from "pdfjs-dist";
+import workerSrc from "pdfjs-dist/build/pdf.worker.entry";
 import ResultPlaceholder from "./ResultPlaceholder";
 import { Delete } from "@/shared/components/icons/Delete";
 import { LoadingButton } from "@/shared/components/LoadingButton";
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
+// ✅ Asignamos el worker para que funcione correctamente en todos los entornos
+GlobalWorkerOptions.workerSrc = workerSrc;
 
 interface AnalysisResult {
   score: number;
@@ -37,14 +38,13 @@ export default function JobForm() {
     try {
       if (file.type === "application/pdf") {
         const arrayBuffer = await file.arrayBuffer();
-        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        const pdf = await getDocument({ data: arrayBuffer }).promise;
 
         let extractedText = "";
 
         for (let i = 1; i <= pdf.numPages; i++) {
           const page = await pdf.getPage(i);
           const content = await page.getTextContent();
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const strings = content.items.map((item: any) => item.str);
           extractedText += strings.join(" ") + "\n\n";
         }
