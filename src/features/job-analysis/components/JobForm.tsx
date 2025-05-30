@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import * as pdfjsLib from "pdfjs-dist/build/pdf";
+import * as pdfjsLib from "pdfjs-dist";
 import pdfjsWorker from "pdfjs-dist/build/pdf.worker.entry";
 import ResultPlaceholder from "./ResultPlaceholder";
 import { Delete } from "@/shared/components/icons/Delete";
